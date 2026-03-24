@@ -8,7 +8,10 @@
     "build": "bun build ./src/index.ts --outdir ./dist --target node",
     "build:bin": "bun build ./src/index.ts --compile --outfile dist/securox",
     "start": "bun run ./src/index.ts",
-    "test": "bun test tests/unit"
+    "test": "bun test tests/unit",
+    "test:integration": "bun test tests/integration --timeout 60000",
+    "test:all": "bun test tests/",
+    "download:bins": "bun run scripts/download-binaries.ts"
   },
   "module": "index.ts",
   "type": "module",
