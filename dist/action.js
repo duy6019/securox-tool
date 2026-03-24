@@ -78984,11 +78984,15 @@ async function run() {
         reportToTerminal(allFindings);
     }
     const threshold = failOn || config["severity-threshold"];
-    const severityOrder = { low: 1, medium: 2, high: 3, critical: 4 };
-    const thresholdLvl = severityOrder[threshold] || 3;
-    const fails = allFindings.some((f) => (severityOrder[f.severity] || 0) >= thresholdLvl);
-    if (fails) {
-      setFailed(`Securox failed: Found vulnerabilities >= ${threshold.toUpperCase()}`);
+    if (threshold.toLowerCase() === "none") {
+      info('✅ fail-on is set to "none". Pipeline will not fail despite vulnerabilities.');
+    } else {
+      const severityOrder = { low: 1, medium: 2, high: 3, critical: 4 };
+      const thresholdLvl = severityOrder[threshold] || 3;
+      const fails = allFindings.some((f) => (severityOrder[f.severity] || 0) >= thresholdLvl);
+      if (fails) {
+        setFailed(`Securox failed: Found vulnerabilities >= ${threshold.toUpperCase()}`);
+      }
     }
   } catch (error2) {
     setFailed(`Action execution failed: ${error2.message}`);

@@ -64,17 +64,21 @@ export const scanCommand = new Command('scan')
 
       // Exit Code logic
       const threshold = options.failOn || config['severity-threshold'];
-      const severityOrder: Record<string, number> = { low: 1, medium: 2, high: 3, critical: 4 };
-      if (!severityOrder[threshold]) {
-        console.warn(`Unknown severity threshold: ${threshold}. Falling back to 'high'.`);
-      }
-      
-      const thresholdLvl = severityOrder[threshold] || 3;
-      const fails = allFindings.some(f => (severityOrder[f.severity] || 0) >= thresholdLvl);
+      if (threshold.toLowerCase() === 'none') {
+        console.log('✅ fail-on is set to "none". Process will exit with code 0 despite vulnerabilities.');
+      } else {
+        const severityOrder: Record<string, number> = { low: 1, medium: 2, high: 3, critical: 4 };
+        if (!severityOrder[threshold]) {
+          console.warn(`Unknown severity threshold: ${threshold}. Falling back to 'high'.`);
+        }
+        
+        const thresholdLvl = severityOrder[threshold] || 3;
+        const fails = allFindings.some(f => (severityOrder[f.severity] || 0) >= thresholdLvl);
 
-      if (fails) {
-        console.log(`Failed threshold: found vulnerabilities sized >= ${threshold.toUpperCase()}`);
-        process.exit(1);
+        if (fails) {
+          console.log(`Failed threshold: found vulnerabilities sized >= ${threshold.toUpperCase()}`);
+          process.exit(1);
+        }
       }
     } catch (error: any) {
       spinner.fail(`Scan failed: ${error.message}`);

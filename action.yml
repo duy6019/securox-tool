@@ -7,7 +7,7 @@ inputs:
     required: false
     default: '.'
   fail-on:
-    description: 'Fail the pipeline on vulnerabilities of size: (low/medium/high/critical)'
+    description: 'Fail the pipeline on vulnerabilities of size: (none/low/medium/high/critical)'
     required: false
     default: 'high'
   format:
