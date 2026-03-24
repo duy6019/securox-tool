@@ -1,8 +1,16 @@
 {
-  "name": "opengrep-tool",
+  "name": "securox",
+  "version": "1.0.0",
+  "bin": {
+    "securox": "dist/index.js"
+  },
+  "scripts": {
+    "build": "bun build ./src/index.ts --outdir ./dist --target node",
+    "build:bin": "bun build ./src/index.ts --compile --outfile dist/securox",
+    "start": "bun run ./src/index.ts"
+  },
   "module": "index.ts",
   "type": "module",
-  "private": true,
   "devDependencies": {
     "@types/bun": "latest",
     "@types/decompress": "^4.2.7",
