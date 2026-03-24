@@ -78162,10 +78162,11 @@ var {
 import * as path19 from "path";
 import * as fs10 from "fs";
 import * as os9 from "os";
+var __dirname = "/Users/duy/projects/opengrep-tool/src/scanners";
 async function runSAST(targetDir) {
   const binaryPath = getBinaryPath("opengrep");
   const tempOutputFile = path19.join(os9.tmpdir(), `opengrep-${Date.now()}.json`);
-  const rulesPath = path19.resolve(import.meta.dir, "../../rules/default");
+  const rulesPath = path19.resolve(__dirname, "../../rules/default");
   try {
     await execa(binaryPath, ["scan", "--json", "--config", rulesPath, "--output", tempOutputFile, "--no-git-ignore", targetDir], { stderr: "pipe" });
   } catch (error2) {
