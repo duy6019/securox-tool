@@ -41,7 +41,7 @@ export async function runSAST(targetDir: string): Promise<Finding[]> {
   }
 }
 
-function mapOpengrepToFindings(data: any): Finding[] {
+export function mapOpengrepToFindings(data: any): Finding[] {
   const findings: Finding[] = [];
   const results = data.results || [];
 

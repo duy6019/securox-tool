@@ -34,7 +34,7 @@ export async function runSecrets(targetDir: string): Promise<Finding[]> {
   }
 }
 
-function mapGitleaksToFindings(data: any[]): Finding[] {
+export function mapGitleaksToFindings(data: any[]): Finding[] {
   const findings: Finding[] = [];
 
   for (const result of (data || [])) {

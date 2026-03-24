@@ -34,7 +34,7 @@ export async function runSCA(targetDir: string): Promise<Finding[]> {
   }
 }
 
-function mapTrivyToFindings(data: any): Finding[] {
+export function mapTrivyToFindings(data: any): Finding[] {
   const findings: Finding[] = [];
   const results = data.Results || [];
 

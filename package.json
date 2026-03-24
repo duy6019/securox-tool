@@ -7,7 +7,8 @@
   "scripts": {
     "build": "bun build ./src/index.ts --outdir ./dist --target node",
     "build:bin": "bun build ./src/index.ts --compile --outfile dist/securox",
-    "start": "bun run ./src/index.ts"
+    "start": "bun run ./src/index.ts",
+    "test": "bun test tests/unit"
   },
   "module": "index.ts",
   "type": "module",
