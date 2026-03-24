@@ -26,7 +26,7 @@ describe('SAST Integration (Opengrep)', () => {
     expect(findings.length).toBeGreaterThan(0);
     expect(findings.every(f => f.tool === 'sast')).toBe(true);
     expect(['low', 'medium', 'high', 'critical']).toContain(findings[0]?.severity ?? 'low');
-  }, 30_000); // 30s timeout: opengrep can be slow on first run
+  }, 120_000); // Increased to 120s: opengrep can be slow on first run
 });
 
 describe('SCA Integration (Trivy)', () => {
@@ -44,7 +44,7 @@ describe('SCA Integration (Trivy)', () => {
     expect(findings.every(f => f.tool === 'sca')).toBe(true);
     const hasLodashCVE = findings.some(f => f.title?.toLowerCase().includes('lodash') || f.id.startsWith('CVE'));
     expect(hasLodashCVE).toBe(true);
-  }, 60_000); // 60s: trivy may run db update on first run
+  }, 120_000); // Increased to 120s: trivy may run db update on first run
 });
 
 describe('Secrets Integration (Gitleaks)', () => {
