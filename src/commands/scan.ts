@@ -23,8 +23,9 @@ export const scanCommand = new Command('scan')
     const config = loadConfig(resolvedPath);
 
     try {
-      spinner.text = 'Checking binaries... (may download on first run)';
-      await downloadAll(); // This fetches binaries if they don't exist
+      spinner.stop(); // pause spinner so download progress logs aren't garbled
+      await downloadAll(); // fetches binaries if they don't exist
+      spinner.start('Binaries ready.');
 
       const allFindings: Finding[] = [];
 

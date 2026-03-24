@@ -9,7 +9,9 @@ export async function runSAST(targetDir: string): Promise<Finding[]> {
   const binaryPath = getBinaryPath('opengrep');
   const tempOutputFile = path.join(os.tmpdir(), `opengrep-${Date.now()}.json`);
 
-  const rulesPath = path.resolve(__dirname, '../../rules/default');
+  // Use import.meta.dir (Bun-native) so the path resolves correctly in both
+  // dev mode and compiled single-binary mode (where __dirname is unreliable)
+  const rulesPath = path.resolve(import.meta.dir, '../../rules/default');
 
   try {
     // We expect opengrep to output JSON

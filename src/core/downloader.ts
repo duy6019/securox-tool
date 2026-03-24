@@ -11,12 +11,6 @@ const OS_MAP: Record<string, string> = {
   win32: 'windows',
 };
 
-const ARCH_MAP: Record<string, string> = {
-  arm64: 'arm64',
-  x64: 'x64',
-  x86_64: 'x86_64', // will normalize Node's x64 to x86_64 or x64 depending on tool
-};
-
 function getOpengrepUrl(): string {
   const version = TOOLS_VERSION.opengrep;
   let osName = OS_MAP[os.platform()] || 'linux';
@@ -37,11 +31,10 @@ function getTrivyUrl(): string {
 }
 
 function getGitleaksUrl(): string {
-  const version = TOOLS_VERSION.gitleaks.replace(/^v/, ''); // Gitleaks uses raw numbers in filename but v in tag
+  const version = TOOLS_VERSION.gitleaks.replace(/^v/, '');
   const osName = os.platform() === 'darwin' ? 'darwin' : os.platform() === 'win32' ? 'windows' : 'linux';
-  const arch = os.arch() === 'x64' ? 'x64' : 'arm64';
+  const archStr = os.arch() === 'x64' ? 'x64' : 'arm64';
   const ext = os.platform() === 'win32' ? 'zip' : 'tar.gz';
-  const archStr = arch === 'x64' ? (osName === 'darwin' ? 'x64' : 'x64') : 'arm64'; // simplify
   return `https://github.com/gitleaks/gitleaks/releases/download/v${version}/gitleaks_${version}_${osName}_${archStr}.${ext}`;
 }
 
@@ -51,8 +44,19 @@ async function downloadFile(url: string, dest: string): Promise<void> {
   if (!response.ok) {
     throw new Error(`Failed to download ${url}: ${response.statusText}`);
   }
-  const buffer = await response.arrayBuffer();
-  fs.writeFileSync(dest, Buffer.from(buffer));
+  if (!response.body) {
+    throw new Error(`No response body from ${url}`);
+  }
+  // Stream to disk to avoid loading large binaries (~80MB) into RAM
+  const file = fs.createWriteStream(dest);
+  const reader = response.body.getReader();
+  await new Promise<void>((resolve, reject) => {
+    const pump = () => reader.read().then(({ done, value }) => {
+      if (done) { file.end(); resolve(); return; }
+      file.write(Buffer.from(value), (err) => { if (err) reject(err); else pump(); });
+    }).catch(reject);
+    pump();
+  });
 }
 
 async function setupBinary(tool: 'opengrep' | 'trivy' | 'gitleaks', url: string): Promise<void> {

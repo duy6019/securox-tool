@@ -54,7 +54,7 @@ function mapTrivyToFindings(data: any): Finding[] {
         severity,
         title: vuln.Title || `${vuln.PkgName} vulnerability`,
         file: target,
-        line: 0,
+        line: undefined,
         remediation: vuln.FixedVersion ? `Upgrade ${vuln.PkgName} to version ${vuln.FixedVersion}` : 'No known fix yet',
       });
     }
