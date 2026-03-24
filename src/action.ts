@@ -54,21 +54,21 @@ async function run(): Promise<void> {
 
     if (config.scanners.sast) {
       core.startGroup('SAST Scan (Opengrep)');
-      const sast = await runSAST(resolvedPath, config.exclude);
+      const sast = await runSAST(resolvedPath);
       allFindings.push(...sast);
       core.endGroup();
     }
 
     if (config.scanners.sca) {
       core.startGroup('SCA Scan (Trivy)');
-      const sca = await runSCA(resolvedPath, config.exclude);
+      const sca = await runSCA(resolvedPath);
       allFindings.push(...sca);
       core.endGroup();
     }
 
     if (config.scanners.secrets) {
       core.startGroup('Secrets Scan (Gitleaks)');
-      const secrets = await runSecrets(resolvedPath, config.exclude);
+      const secrets = await runSecrets(resolvedPath);
       allFindings.push(...secrets);
       core.endGroup();
     }
@@ -90,16 +90,12 @@ async function run(): Promise<void> {
 
     // Exit Code Logic
     const threshold = failOn || config['severity-threshold'];
-    if (threshold.toLowerCase() === 'none') {
-      core.info('✅ fail-on is set to "none". Pipeline will not fail despite vulnerabilities.');
-    } else {
-      const severityOrder: Record<string, number> = { low: 1, medium: 2, high: 3, critical: 4 };
-      const thresholdLvl = severityOrder[threshold] || 3;
-      const fails = allFindings.some(f => (severityOrder[f.severity] || 0) >= thresholdLvl);
+    const severityOrder: Record<string, number> = { low: 1, medium: 2, high: 3, critical: 4 };
+    const thresholdLvl = severityOrder[threshold] || 3;
+    const fails = allFindings.some(f => (severityOrder[f.severity] || 0) >= thresholdLvl);
 
-      if (fails) {
-        core.setFailed(`Securox failed: Found vulnerabilities >= ${threshold.toUpperCase()}`);
-      }
+    if (fails) {
+      core.setFailed(`Securox failed: Found vulnerabilities >= ${threshold.toUpperCase()}`);
     }
   } catch (error: any) {
     core.setFailed(`Action execution failed: ${error.message}`);

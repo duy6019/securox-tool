@@ -5,7 +5,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
 
-export async function runSecrets(targetDir: string, exclude: string[] = []): Promise<Finding[]> {
+export async function runSecrets(targetDir: string): Promise<Finding[]> {
   const binaryPath = getBinaryPath('gitleaks');
   const tempOutputFile = path.join(os.tmpdir(), `gitleaks-${Date.now()}.json`);
 
@@ -28,25 +28,17 @@ export async function runSecrets(targetDir: string, exclude: string[] = []): Pro
   
   try {
     const data = JSON.parse(output);
-    return mapGitleaksToFindings(data, exclude);
+    return mapGitleaksToFindings(data);
   } catch (e) {
     console.error('Failed to parse Gitleaks output:', e);
     return [];
   }
 }
 
-export function mapGitleaksToFindings(data: any[], exclude: string[] = []): Finding[] {
+export function mapGitleaksToFindings(data: any[]): Finding[] {
   const findings: Finding[] = [];
 
   for (const result of (data || [])) {
-    // Skip if file path matches any exclusion pattern
-    if (exclude.some(pattern => {
-      const p = pattern.replace(/\/\*\*$/, '');
-      return result.File.includes(p);
-    })) {
-      continue;
-    }
-
     findings.push({
       id: result.RuleID || 'SECRET_LEAK',
       tool: 'secrets',

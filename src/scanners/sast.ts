@@ -5,27 +5,18 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
 
-export async function runSAST(targetDir: string, exclude: string[] = []): Promise<Finding[]> {
+export async function runSAST(targetDir: string): Promise<Finding[]> {
   const binaryPath = getBinaryPath('opengrep');
   const tempOutputFile = path.join(os.tmpdir(), `opengrep-${Date.now()}.json`);
 
-  // Provide fallbacks for both native TS execution (src/scanners/sast.ts) and bundled Node.js exec (dist/action.js)
-  const rulesNative = path.resolve(__dirname, '../../rules/default');
-  const rulesBundled = path.resolve(__dirname, '../rules/default');
-  const rulesPath = fs.existsSync(rulesNative) ? rulesNative : rulesBundled;
+  // Use import.meta.dir (Bun-native) so the path resolves correctly in both
+  // dev mode and compiled single-binary mode (where __dirname is unreliable)
+  const rulesPath = path.resolve(import.meta.dir, '../../rules/default');
 
   try {
     // --no-git-ignore: scan all files, not just git-tracked ones
-    // --no-git-ignore: scan all files, not just git-tracked ones
-    // --exclude: excluding unwanted folders/files from scan
-    const opengrepArgs = ['scan', '--json', '--config', rulesPath, '--output', tempOutputFile, '--no-git-ignore'];
-    
-    for (const pattern of exclude) {
-      opengrepArgs.push('--exclude', pattern.replace(/\/\*\*$/, '').replace(/\/$/, ''));
-    }
-    opengrepArgs.push(targetDir);
-
-    await execa(binaryPath, opengrepArgs, { stderr: 'pipe' });
+    // stderr: 'pipe' keeps Python warnings from corrupting the JSON output file
+    await execa(binaryPath, ['scan', '--json', '--config', rulesPath, '--output', tempOutputFile, '--no-git-ignore', targetDir], { stderr: 'pipe' });
   } catch (error: any) {
     // Opengrep exits with non-zero if findings are strictly failed or it hits an error.
     // We can still read the JSON if it managed to generate it.
