@@ -6,7 +6,7 @@ import { runSAST } from '../../src/scanners/sast';
 import { runSCA } from '../../src/scanners/sca';
 import { runSecrets } from '../../src/scanners/secrets';
 
-const FIXTURES_DIR = path.resolve(import.meta.dir, '../fixtures');
+const FIXTURES_DIR = path.resolve(import.meta.dir, '../../test-workspace');
 
 // Guard: skip entire suite if binaries are not downloaded yet
 function binaryExists(tool: 'opengrep' | 'trivy' | 'gitleaks'): boolean {

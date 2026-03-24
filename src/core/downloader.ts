@@ -13,13 +13,21 @@ const OS_MAP: Record<string, string> = {
 
 function getOpengrepUrl(): string {
   const version = TOOLS_VERSION.opengrep;
-  let osName = OS_MAP[os.platform()] || 'linux';
-  let arch = os.arch();
-  // opengrep uses x86_64 for mac/linux, but x64 for windows?
-  let archStr = arch === 'x64' && osName !== 'windows' ? 'x86_64' : arch;
-  const ext = osName === 'windows' ? '.zip' : ''; // Opengrep releases zipped binaries for windows recently? Let's assume raw binary for now based on typical semgrep packaging. Wait, semgrep uses zips.
-  // Actually, let's just make a generic downloader that handles .tar.gz or raw
-  return `https://github.com/opengrep/opengrep/releases/download/${version}/opengrep-${osName}-${archStr}${ext}`;
+  const platform = os.platform();
+  const arch = os.arch(); // 'arm64' or 'x64'
+
+  if (platform === 'darwin') {
+    // e.g. opengrep_osx_arm64 or opengrep_osx_x86
+    const archStr = arch === 'arm64' ? 'arm64' : 'x86';
+    return `https://github.com/opengrep/opengrep/releases/download/${version}/opengrep_osx_${archStr}`;
+  } else if (platform === 'win32') {
+    // e.g. opengrep-core_windows_x86.zip
+    return `https://github.com/opengrep/opengrep/releases/download/${version}/opengrep-core_windows_x86.zip`;
+  } else {
+    // Linux: manylinux raw binary
+    const archStr = arch === 'arm64' ? 'aarch64' : 'x86';
+    return `https://github.com/opengrep/opengrep/releases/download/${version}/opengrep_manylinux_${archStr}`;
+  }
 }
 
 function getTrivyUrl(): string {

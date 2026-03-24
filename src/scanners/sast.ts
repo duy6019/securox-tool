@@ -14,9 +14,9 @@ export async function runSAST(targetDir: string): Promise<Finding[]> {
   const rulesPath = path.resolve(import.meta.dir, '../../rules/default');
 
   try {
-    // We expect opengrep to output JSON
-    // opengrep --json --config <rulesPath> --output tempOutputFile targetDir
-    await execa(binaryPath, ['--json', '--config', rulesPath, '--output', tempOutputFile, targetDir]);
+    // --no-git-ignore: scan all files, not just git-tracked ones
+    // stderr: 'pipe' keeps Python warnings from corrupting the JSON output file
+    await execa(binaryPath, ['scan', '--json', '--config', rulesPath, '--output', tempOutputFile, '--no-git-ignore', targetDir], { stderr: 'pipe' });
   } catch (error: any) {
     // Opengrep exits with non-zero if findings are strictly failed or it hits an error.
     // We can still read the JSON if it managed to generate it.

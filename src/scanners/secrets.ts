@@ -10,8 +10,9 @@ export async function runSecrets(targetDir: string): Promise<Finding[]> {
   const tempOutputFile = path.join(os.tmpdir(), `gitleaks-${Date.now()}.json`);
 
   try {
-    // try running: gitleaks detect --source targetDir -v --report-format json --report-path tempOutputFile --no-git
-    await execa(binaryPath, ['detect', '--source', targetDir, '--report-format', 'json', '--report-path', tempOutputFile, '--no-git', '--exit-code', '0']);
+    // gitleaks detect --source targetDir --report-format json --report-path <file> --exit-code 0
+    // Without --no-git so it also scans git history
+    await execa(binaryPath, ['detect', '--source', targetDir, '--report-format', 'json', '--report-path', tempOutputFile, '--exit-code', '0']);
   } catch (error: any) {
     if (!fs.existsSync(tempOutputFile)) {
       throw new Error(`Gitleaks failed: ${error.message}`);

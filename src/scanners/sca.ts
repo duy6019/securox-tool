@@ -40,9 +40,9 @@ export function mapTrivyToFindings(data: any): Finding[] {
 
   for (const result of results) {
     const target = result.Target;
-    const vulnerabilities = result.Vulnerabilities || [];
 
-    for (const vuln of vulnerabilities) {
+    // Handle SCA: package vulnerabilities
+    for (const vuln of (result.Vulnerabilities || [])) {
       let severity: Finding['severity'] = 'low';
       if (vuln.Severity === 'CRITICAL') severity = 'critical';
       if (vuln.Severity === 'HIGH') severity = 'high';
@@ -56,6 +56,23 @@ export function mapTrivyToFindings(data: any): Finding[] {
         file: target,
         line: undefined,
         remediation: vuln.FixedVersion ? `Upgrade ${vuln.PkgName} to version ${vuln.FixedVersion}` : 'No known fix yet',
+      });
+    }
+
+    // Handle Secrets: Trivy can also detect hardcoded secrets
+    for (const secret of (result.Secrets || [])) {
+      let severity: Finding['severity'] = 'high';
+      if (secret.Severity === 'CRITICAL') severity = 'critical';
+      if (secret.Severity === 'MEDIUM') severity = 'medium';
+
+      findings.push({
+        id: secret.RuleID || 'SECRET',
+        tool: 'sca', // still categorized under sca since it's from trivy
+        severity,
+        title: secret.Title || 'Hardcoded Secret',
+        file: target,
+        line: secret.StartLine,
+        remediation: 'Rotate this secret immediately and remove from codebase.',
       });
     }
   }
