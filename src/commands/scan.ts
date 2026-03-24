@@ -69,7 +69,7 @@ export const scanCommand = new Command('scan')
       }
       
       const thresholdLvl = severityOrder[threshold] || 3;
-      const fails = allFindings.some(f => severityOrder[f.severity] >= thresholdLvl);
+      const fails = allFindings.some(f => (severityOrder[f.severity] || 0) >= thresholdLvl);
 
       if (fails) {
         console.log(`Failed threshold: found vulnerabilities sized >= ${threshold.toUpperCase()}`);
