@@ -89,13 +89,14 @@ async function run(): Promise<void> {
     }
 
     // Exit Code Logic
-    const threshold = failOn || config['severity-threshold'];
-    const severityOrder: Record<string, number> = { low: 1, medium: 2, high: 3, critical: 4 };
-    const thresholdLvl = severityOrder[threshold] || 3;
-    const fails = allFindings.some(f => (severityOrder[f.severity] || 0) >= thresholdLvl);
-
-    if (fails) {
-      core.setFailed(`Securox failed: Found vulnerabilities >= ${threshold.toUpperCase()}`);
+    const threshold = (failOn || config['severity-threshold']).toLowerCase();
+    if (threshold !== 'none') {
+      const severityOrder: Record<string, number> = { low: 1, medium: 2, high: 3, critical: 4 };
+      const thresholdLvl = severityOrder[threshold] || 3;
+      const fails = allFindings.some(f => (severityOrder[f.severity] || 0) >= thresholdLvl);
+      if (fails) {
+        core.setFailed(`Securox failed: Found vulnerabilities >= ${threshold.toUpperCase()}`);
+      }
     }
   } catch (error: any) {
     core.setFailed(`Action execution failed: ${error.message}`);
