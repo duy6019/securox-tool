@@ -78166,7 +78166,9 @@ var __dirname = "/Users/duy/projects/opengrep-tool/src/scanners";
 async function runSAST(targetDir) {
   const binaryPath = getBinaryPath("opengrep");
   const tempOutputFile = path19.join(os9.tmpdir(), `opengrep-${Date.now()}.json`);
-  const rulesPath = path19.resolve(__dirname, "../../rules/default");
+  const rulesFromSrc = path19.resolve(__dirname, "../../rules/default");
+  const rulesFromDist = path19.resolve(__dirname, "../rules/default");
+  const rulesPath = fs10.existsSync(rulesFromSrc) ? rulesFromSrc : rulesFromDist;
   try {
     await execa(binaryPath, ["scan", "--json", "--config", rulesPath, "--output", tempOutputFile, "--no-git-ignore", targetDir], { stderr: "pipe" });
   } catch (error2) {

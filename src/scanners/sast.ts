@@ -9,9 +9,12 @@ export async function runSAST(targetDir: string): Promise<Finding[]> {
   const binaryPath = getBinaryPath('opengrep');
   const tempOutputFile = path.join(os.tmpdir(), `opengrep-${Date.now()}.json`);
 
-  // __dirname works in both Bun (native TS) and bundled Node.js (dist/action.js)
-  // import.meta.dir is Bun-only and returns undefined when run via Node.js
-  const rulesPath = path.resolve(__dirname, '../../rules/default');
+  // Resolve rules path correctly for both environments:
+  // - Local Bun: __dirname = src/scanners/ → need ../../rules/default
+  // - GitHub Actions bundle: __dirname = dist/ → need ../rules/default
+  const rulesFromSrc = path.resolve(__dirname, '../../rules/default');
+  const rulesFromDist = path.resolve(__dirname, '../rules/default');
+  const rulesPath = fs.existsSync(rulesFromSrc) ? rulesFromSrc : rulesFromDist;
 
   try {
     // --no-git-ignore: scan all files, not just git-tracked ones
