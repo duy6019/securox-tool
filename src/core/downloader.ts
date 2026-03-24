@@ -92,12 +92,10 @@ async function setupBinary(tool: 'opengrep' | 'trivy' | 'gitleaks', url: string)
 
 export async function downloadAll(): Promise<void> {
   ensureBinDir();
-  try {
-    await setupBinary('opengrep', getOpengrepUrl());
-    await setupBinary('trivy', getTrivyUrl());
-    await setupBinary('gitleaks', getGitleaksUrl());
-  } catch (error) {
-    console.error('Error downloading binaries:', error);
-    process.exit(1);
-  }
+  // Download all binaries in parallel for ~3x speed improvement
+  await Promise.all([
+    setupBinary('opengrep', getOpengrepUrl()),
+    setupBinary('trivy', getTrivyUrl()),
+    setupBinary('gitleaks', getGitleaksUrl()),
+  ]);
 }

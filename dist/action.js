@@ -71435,14 +71435,11 @@ async function setupBinary(tool, url2) {
 }
 async function downloadAll() {
   ensureBinDir();
-  try {
-    await setupBinary("opengrep", getOpengrepUrl());
-    await setupBinary("trivy", getTrivyUrl());
-    await setupBinary("gitleaks", getGitleaksUrl());
-  } catch (error2) {
-    console.error("Error downloading binaries:", error2);
-    process.exit(1);
-  }
+  await Promise.all([
+    setupBinary("opengrep", getOpengrepUrl()),
+    setupBinary("trivy", getTrivyUrl()),
+    setupBinary("gitleaks", getGitleaksUrl())
+  ]);
 }
 
 // node_modules/is-plain-obj/index.js
@@ -78269,7 +78266,7 @@ function mapTrivyToFindings(data) {
         severity = "medium";
       findings.push({
         id: secret.RuleID || "SECRET",
-        tool: "sca",
+        tool: "secrets",
         severity,
         title: secret.Title || "Hardcoded Secret",
         file: target,

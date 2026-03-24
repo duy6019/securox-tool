@@ -16,7 +16,7 @@ export const scanCommand = new Command('scan')
   .argument('[targetPath]', 'Path to scan', '.')
   .option('-f, --format <type>', 'Output format (terminal/json/sarif)', 'terminal')
   .option('-o, --output <path>', 'Output file path')
-  .option('--fail-on <severity>', 'Fail exit code on this severity (low/medium/high/critical)')
+  .option('--fail-on <severity>', 'Fail exit code on this severity (none/low/medium/high/critical)')
   .action(async (targetPath, options) => {
     const spinner = ora('Initializing Securox scanners...').start();
     const resolvedPath = path.resolve(targetPath);

@@ -67,7 +67,7 @@ export function mapTrivyToFindings(data: any): Finding[] {
 
       findings.push({
         id: secret.RuleID || 'SECRET',
-        tool: 'sca', // still categorized under sca since it's from trivy
+        tool: 'secrets', // Trivy-detected secrets belong in 'secrets' category, not 'sca'
         severity,
         title: secret.Title || 'Hardcoded Secret',
         file: target,
