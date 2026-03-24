@@ -2,7 +2,7 @@ import * as os from 'os';
 import * as fs from 'fs';
 import * as path from 'path';
 import { ensureBinDir, getBinaryName, getBinaryPath, BIN_DIR } from './environment';
-import { TOOLS_VERSION } from './config';
+import { TOOLS_VERSION } from './constants';
 import decompress from 'decompress';
 
 const OS_MAP: Record<string, string> = {

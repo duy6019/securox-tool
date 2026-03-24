@@ -2,7 +2,7 @@ import { Command } from 'commander';
 import ora from 'ora';
 import * as path from 'path';
 import { downloadAll } from '../core/downloader';
-import { loadConfig } from '../config';
+import { loadConfig } from '../core/user-loader';
 import { runSAST } from '../scanners/sast';
 import { runSCA } from '../scanners/sca';
 import { runSecrets } from '../scanners/secrets';

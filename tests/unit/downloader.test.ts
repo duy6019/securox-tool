@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'bun:test';
-import { TOOLS_VERSION } from '../../src/core/config';
+import { TOOLS_VERSION } from '../../src/core/constants';
 
 // We test the URL construction logic by re-implementing it inline
 // since the URL builder functions are not exported (they're pure internal helpers).

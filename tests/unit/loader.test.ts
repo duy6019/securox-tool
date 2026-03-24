@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import { loadConfig } from '../../src/config';
+import { loadConfig } from '../../src/core/user-loader';
 
 describe('loadConfig', () => {
   let tmpDir: string;
