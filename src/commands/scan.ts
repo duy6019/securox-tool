@@ -31,19 +31,19 @@ export const scanCommand = new Command('scan')
 
       if (config.scanners.sast) {
         spinner.text = 'Running SAST scan (Opengrep)...';
-        const sast = await runSAST(resolvedPath);
+        const sast = await runSAST(resolvedPath, config.exclude);
         allFindings.push(...sast);
       }
 
       if (config.scanners.sca) {
         spinner.text = 'Running SCA scan (Trivy)...';
-        const sca = await runSCA(resolvedPath);
+        const sca = await runSCA(resolvedPath, config.exclude);
         allFindings.push(...sca);
       }
 
       if (config.scanners.secrets) {
         spinner.text = 'Running Secrets scan (Gitleaks)...';
-        const secrets = await runSecrets(resolvedPath);
+        const secrets = await runSecrets(resolvedPath, config.exclude);
         allFindings.push(...secrets);
       }
 

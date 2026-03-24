@@ -1,0 +1,16 @@
+# Securox configuration for self-scanning
+scanners:
+  sast: true
+  sca: true
+  secrets: true
+
+severity-threshold: high
+
+# We exclude test-workspace because it contains intentional vulnerabilities for testing
+# We exclude dist because it contains the bundled action (obfuscated/bundled code)
+exclude:
+  - "node_modules/**"
+  - "dist/**"
+  - "test-workspace/**"
+  - "tests/**"
+  - "rules/**"

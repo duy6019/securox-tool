@@ -5,13 +5,16 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
 
-export async function runSCA(targetDir: string): Promise<Finding[]> {
+export async function runSCA(targetDir: string, exclude: string[] = []): Promise<Finding[]> {
   const binaryPath = getBinaryPath('trivy');
   const tempOutputFile = path.join(os.tmpdir(), `trivy-${Date.now()}.json`);
 
   try {
-    // try running: trivy fs targetDir --format json -o output.json
-    await execa(binaryPath, ['fs', targetDir, '--format', 'json', '--output', tempOutputFile, '--quiet']);
+    const trivyArgs = ['fs', targetDir, '--format', 'json', '--output', tempOutputFile, '--quiet'];
+    if (exclude.length > 0) {
+      trivyArgs.push('--skip-dirs', exclude.map(p => p.replace(/\/$/, '').replace(/\/\*\*$/, '')).join(','));
+    }
+    await execa(binaryPath, trivyArgs);
   } catch (error: any) {
     if (!fs.existsSync(tempOutputFile)) {
       throw new Error(`Trivy failed: ${error.message}`);

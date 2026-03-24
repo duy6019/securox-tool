@@ -54,21 +54,21 @@ async function run(): Promise<void> {
 
     if (config.scanners.sast) {
       core.startGroup('SAST Scan (Opengrep)');
-      const sast = await runSAST(resolvedPath);
+      const sast = await runSAST(resolvedPath, config.exclude);
       allFindings.push(...sast);
       core.endGroup();
     }
 
     if (config.scanners.sca) {
       core.startGroup('SCA Scan (Trivy)');
-      const sca = await runSCA(resolvedPath);
+      const sca = await runSCA(resolvedPath, config.exclude);
       allFindings.push(...sca);
       core.endGroup();
     }
 
     if (config.scanners.secrets) {
       core.startGroup('Secrets Scan (Gitleaks)');
-      const secrets = await runSecrets(resolvedPath);
+      const secrets = await runSecrets(resolvedPath, config.exclude);
       allFindings.push(...secrets);
       core.endGroup();
     }
