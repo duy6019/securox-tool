@@ -1,0 +1,19 @@
+name: 'Securox Scanner'
+description: 'Running Open-Source Developer Security Scanners (SAST, SCA, Secrets)'
+author: 'Securox'
+inputs:
+  targetPath:
+    description: 'Path/folder to scan, defaults to workspace relative path'
+    required: false
+    default: '.'
+  fail-on:
+    description: 'Fail the pipeline on vulnerabilities of size: (low/medium/high/critical)'
+    required: false
+    default: 'high'
+  format:
+    description: 'Console log output format: terminal, json, sarif'
+    required: false
+    default: 'terminal'
+runs:
+  using: 'node20'
+  main: 'dist/action.js'

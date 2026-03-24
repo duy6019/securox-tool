@@ -7,6 +7,7 @@
   "scripts": {
     "build": "bun build ./src/index.ts --outdir ./dist --target node",
     "build:bin": "bun build ./src/index.ts --compile --outfile dist/securox",
+    "build:action": "bun build ./src/action.ts --outfile dist/action.js --target node",
     "start": "bun run ./src/index.ts",
     "test": "bun test tests/unit",
     "test:integration": "bun test tests/integration --timeout 60000",
@@ -25,6 +26,8 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "@actions/cache": "^6.0.0",
+    "@actions/core": "^3.0.0",
     "chalk": "^5.6.2",
     "cli-table3": "^0.6.5",
     "commander": "^14.0.3",
