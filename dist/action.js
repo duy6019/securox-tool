@@ -78162,12 +78162,20 @@ var {
 import * as path19 from "path";
 import * as fs10 from "fs";
 import * as os9 from "os";
-async function runSAST(targetDir) {
+var __dirname = "/Users/duy/projects/opengrep-tool/src/scanners";
+async function runSAST(targetDir, exclude = []) {
   const binaryPath = getBinaryPath("opengrep");
   const tempOutputFile = path19.join(os9.tmpdir(), `opengrep-${Date.now()}.json`);
-  const rulesPath = path19.resolve(import.meta.dir, "../../rules/default");
+  const rulesNative = path19.resolve(__dirname, "../../rules/default");
+  const rulesBundled = path19.resolve(__dirname, "../rules/default");
+  const rulesPath = fs10.existsSync(rulesNative) ? rulesNative : rulesBundled;
   try {
-    await execa(binaryPath, ["scan", "--json", "--config", rulesPath, "--output", tempOutputFile, "--no-git-ignore", targetDir], { stderr: "pipe" });
+    const opengrepArgs = ["scan", "--json", "--config", rulesPath, "--output", tempOutputFile, "--no-git-ignore"];
+    for (const pattern of exclude) {
+      opengrepArgs.push("--exclude", pattern.replace(/\/\*\*$/, "").replace(/\/$/, ""));
+    }
+    opengrepArgs.push(targetDir);
+    await execa(binaryPath, opengrepArgs, { stderr: "pipe" });
   } catch (error2) {
     if (!fs10.existsSync(tempOutputFile)) {
       throw new Error(`Opengrep failed: ${error2.message}`);
@@ -78212,11 +78220,15 @@ function mapOpengrepToFindings(data) {
 import * as path20 from "path";
 import * as fs11 from "fs";
 import * as os10 from "os";
-async function runSCA(targetDir) {
+async function runSCA(targetDir, exclude = []) {
   const binaryPath = getBinaryPath("trivy");
   const tempOutputFile = path20.join(os10.tmpdir(), `trivy-${Date.now()}.json`);
   try {
-    await execa(binaryPath, ["fs", targetDir, "--format", "json", "--output", tempOutputFile, "--quiet"]);
+    const trivyArgs = ["fs", targetDir, "--format", "json", "--output", tempOutputFile, "--quiet"];
+    if (exclude.length > 0) {
+      trivyArgs.push("--skip-dirs", exclude.map((p) => p.replace(/\/$/, "").replace(/\/\*\*$/, "")).join(","));
+    }
+    await execa(binaryPath, trivyArgs);
   } catch (error2) {
     if (!fs11.existsSync(tempOutputFile)) {
       throw new Error(`Trivy failed: ${error2.message}`);
@@ -78282,7 +78294,7 @@ function mapTrivyToFindings(data) {
 import * as path21 from "path";
 import * as fs12 from "fs";
 import * as os11 from "os";
-async function runSecrets(targetDir) {
+async function runSecrets(targetDir, exclude = []) {
   const binaryPath = getBinaryPath("gitleaks");
   const tempOutputFile = path21.join(os11.tmpdir(), `gitleaks-${Date.now()}.json`);
   try {
@@ -78299,15 +78311,21 @@ async function runSecrets(targetDir) {
   fs12.unlinkSync(tempOutputFile);
   try {
     const data = JSON.parse(output);
-    return mapGitleaksToFindings(data);
+    return mapGitleaksToFindings(data, exclude);
   } catch (e) {
     console.error("Failed to parse Gitleaks output:", e);
     return [];
   }
 }
-function mapGitleaksToFindings(data) {
+function mapGitleaksToFindings(data, exclude = []) {
   const findings = [];
   for (const result of data || []) {
+    if (exclude.some((pattern) => {
+      const p = pattern.replace(/\/\*\*$/, "");
+      return result.File.includes(p);
+    })) {
+      continue;
+    }
     findings.push({
       id: result.RuleID || "SECRET_LEAK",
       tool: "secrets",
@@ -78937,19 +78955,19 @@ async function run() {
     const allFindings = [];
     if (config.scanners.sast) {
       startGroup("SAST Scan (Opengrep)");
-      const sast = await runSAST(resolvedPath);
+      const sast = await runSAST(resolvedPath, config.exclude);
       allFindings.push(...sast);
       endGroup();
     }
     if (config.scanners.sca) {
       startGroup("SCA Scan (Trivy)");
-      const sca = await runSCA(resolvedPath);
+      const sca = await runSCA(resolvedPath, config.exclude);
       allFindings.push(...sca);
       endGroup();
     }
     if (config.scanners.secrets) {
       startGroup("Secrets Scan (Gitleaks)");
-      const secrets = await runSecrets(resolvedPath);
+      const secrets = await runSecrets(resolvedPath, config.exclude);
       allFindings.push(...secrets);
       endGroup();
     }

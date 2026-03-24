@@ -9,9 +9,10 @@ export async function runSAST(targetDir: string, exclude: string[] = []): Promis
   const binaryPath = getBinaryPath('opengrep');
   const tempOutputFile = path.join(os.tmpdir(), `opengrep-${Date.now()}.json`);
 
-  // Use import.meta.dir (Bun-native) so the path resolves correctly in both
-  // dev mode and compiled single-binary mode (where __dirname is unreliable)
-  const rulesPath = path.resolve(import.meta.dir, '../../rules/default');
+  // Provide fallbacks for both native TS execution (src/scanners/sast.ts) and bundled Node.js exec (dist/action.js)
+  const rulesNative = path.resolve(__dirname, '../../rules/default');
+  const rulesBundled = path.resolve(__dirname, '../rules/default');
+  const rulesPath = fs.existsSync(rulesNative) ? rulesNative : rulesBundled;
 
   try {
     // --no-git-ignore: scan all files, not just git-tracked ones
