@@ -9,10 +9,12 @@ export async function runSAST(targetDir: string): Promise<Finding[]> {
   const binaryPath = getBinaryPath('opengrep');
   const tempOutputFile = path.join(os.tmpdir(), `opengrep-${Date.now()}.json`);
 
+  const rulesPath = path.resolve(__dirname, '../../rules/default');
+
   try {
     // We expect opengrep to output JSON
-    // opengrep --json --output tempOutputFile targetDir
-    await execa(binaryPath, ['--json', '--output', tempOutputFile, targetDir]);
+    // opengrep --json --config <rulesPath> --output tempOutputFile targetDir
+    await execa(binaryPath, ['--json', '--config', rulesPath, '--output', tempOutputFile, targetDir]);
   } catch (error: any) {
     // Opengrep exits with non-zero if findings are strictly failed or it hits an error.
     // We can still read the JSON if it managed to generate it.
