@@ -1,0 +1,22 @@
+{
+  "name": "opengrep-tool",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^25.5.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "chalk": "^5.6.2",
+    "cli-table3": "^0.6.5",
+    "commander": "^14.0.3",
+    "execa": "^9.6.1",
+    "js-yaml": "^4.1.1",
+    "ora": "^9.3.0"
+  }
+}
