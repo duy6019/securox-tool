@@ -1,0 +1,40 @@
+name: CI/CD
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Test & Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Lint & Unit Tests
+        run: bun test tests/unit
+
+      - name: Download Security Binaries
+        run: bun run scripts/download-binaries.ts
+
+      - name: Integration Tests
+        run: bun test tests/integration --timeout 60000
+
+      - name: Build Global Binary
+        run: bun run build:bin
+
+      - name: Build GitHub Action Bundle
+        run: bun run build:action
+
+      # Meta-scan: Run securox on its own codebase!
+      - name: Self-Security Scan
+        run: bun run src/index.ts scan . --fail-on high
