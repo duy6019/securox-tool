@@ -1,5 +1,5 @@
 {
-  "name": "securox",
+  "name": "securox-tool",
   "version": "1.0.0",
   "bin": {
     "securox": "dist/index.js"
