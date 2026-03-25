@@ -78994,8 +78994,10 @@ async function run() {
     } catch (e) {
       info(`⚠️ Cache restore failed or unavailable: ${e.message}`);
     }
-    if (!cacheHit || !fs16.existsSync(BIN_DIR) || fs16.readdirSync(BIN_DIR).length === 0) {
-      info("⏬ Binaries not found in cache. Downloading fresh copies...");
+    const tools = ["opengrep", "trivy", "gitleaks", "bearer"];
+    const allBinariesExist = tools.every((t) => fs16.existsSync(path23.join(BIN_DIR, t)));
+    if (!cacheHit || !allBinariesExist) {
+      info("⏬ Some binaries missing. Downloading/Updating...");
       await downloadAll();
       try {
         await saveCache2(cachePaths, cacheKey);

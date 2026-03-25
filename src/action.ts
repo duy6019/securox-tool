@@ -38,8 +38,11 @@ async function run(): Promise<void> {
       core.info(`⚠️ Cache restore failed or unavailable: ${(e as Error).message}`);
     }
 
-    if (!cacheHit || !fs.existsSync(BIN_DIR) || fs.readdirSync(BIN_DIR).length === 0) {
-      core.info('⏬ Binaries not found in cache. Downloading fresh copies...');
+    const tools = ['opengrep', 'trivy', 'gitleaks', 'bearer'] as const;
+    const allBinariesExist = tools.every(t => fs.existsSync(path.join(BIN_DIR, t)));
+
+    if (!cacheHit || !allBinariesExist) {
+      core.info('⏬ Some binaries missing. Downloading/Updating...');
       await downloadAll();
 
       try {
