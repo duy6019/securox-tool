@@ -15,7 +15,7 @@ export interface SecuroxConfig {
 
 export function loadConfig(dir: string): SecuroxConfig {
   const defaults: SecuroxConfig = {
-    scanners: { sast: true, sca: true, secrets: true, performance: false },
+    scanners: { sast: true, sca: true, secrets: true, performance: true },
     exclude: ['node_modules/', 'dist/', '**/*.test.ts'],
     'severity-threshold': 'high',
   };

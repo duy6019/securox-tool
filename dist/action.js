@@ -71305,7 +71305,7 @@ var safeDump = renamed("safeDump", "dump");
 import * as path11 from "path";
 function loadConfig(dir) {
   const defaults = {
-    scanners: { sast: true, sca: true, secrets: true, performance: false },
+    scanners: { sast: true, sca: true, secrets: true, performance: true },
     exclude: ["node_modules/", "dist/", "**/*.test.ts"],
     "severity-threshold": "high"
   };
