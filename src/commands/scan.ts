@@ -23,8 +23,8 @@ export const scanCommand = new Command('scan')
     const config = loadConfig(resolvedPath);
 
     try {
-      spinner.stop(); // pause spinner so download progress logs aren't garbled
-      await downloadAll(); // fetches binaries if they don't exist
+      spinner.stop();
+      await downloadAll();
       spinner.start('Binaries ready.');
 
       const allFindings: Finding[] = [];
@@ -49,7 +49,6 @@ export const scanCommand = new Command('scan')
 
       spinner.succeed('Scanning completed!');
 
-      // Reporting
       switch (options.format) {
         case 'json':
           reportToJson(allFindings, options.output);
@@ -62,7 +61,6 @@ export const scanCommand = new Command('scan')
           reportToTerminal(allFindings);
       }
 
-      // Exit Code logic
       const threshold = options.failOn || config['severity-threshold'];
       const severityOrder: Record<string, number> = { low: 1, medium: 2, high: 3, critical: 4 };
       if (!severityOrder[threshold]) {

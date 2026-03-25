@@ -14,7 +14,7 @@ const OS_MAP: Record<string, string> = {
 function getOpengrepUrl(): string {
   const version = TOOLS_VERSION.opengrep;
   const platform = os.platform();
-  const arch = os.arch(); // 'arm64' or 'x64'
+  const arch = os.arch();
 
   if (platform === 'darwin') {
     // e.g. opengrep_osx_arm64 or opengrep_osx_x86

@@ -10,7 +10,6 @@ export async function runSCA(targetDir: string): Promise<Finding[]> {
   const tempOutputFile = path.join(os.tmpdir(), `trivy-${Date.now()}.json`);
 
   try {
-    // try running: trivy fs targetDir --format json -o output.json
     await execa(binaryPath, ['fs', targetDir, '--format', 'json', '--output', tempOutputFile, '--quiet']);
   } catch (error: any) {
     if (!fs.existsSync(tempOutputFile)) {
@@ -41,7 +40,6 @@ export function mapTrivyToFindings(data: any): Finding[] {
   for (const result of results) {
     const target = result.Target;
 
-    // Handle SCA: package vulnerabilities
     for (const vuln of (result.Vulnerabilities || [])) {
       let severity: Finding['severity'] = 'low';
       if (vuln.Severity === 'CRITICAL') severity = 'critical';
@@ -59,7 +57,6 @@ export function mapTrivyToFindings(data: any): Finding[] {
       });
     }
 
-    // Handle Secrets: Trivy can also detect hardcoded secrets
     for (const secret of (result.Secrets || [])) {
       let severity: Finding['severity'] = 'high';
       if (secret.Severity === 'CRITICAL') severity = 'critical';

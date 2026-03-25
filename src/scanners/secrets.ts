@@ -10,8 +10,7 @@ export async function runSecrets(targetDir: string): Promise<Finding[]> {
   const tempOutputFile = path.join(os.tmpdir(), `gitleaks-${Date.now()}.json`);
 
   try {
-    // gitleaks detect --source targetDir --report-format json --report-path <file> --exit-code 0
-    // Without --no-git so it also scans git history
+    // --exit-code 0 prevents gitleaks from failing the process so we can read the JSON output
     await execa(binaryPath, ['detect', '--source', targetDir, '--report-format', 'json', '--report-path', tempOutputFile, '--exit-code', '0']);
   } catch (error: any) {
     if (!fs.existsSync(tempOutputFile)) {
@@ -42,7 +41,7 @@ export function mapGitleaksToFindings(data: any[]): Finding[] {
     findings.push({
       id: result.RuleID || 'SECRET_LEAK',
       tool: 'secrets',
-      severity: 'critical', // always critical for secrets
+      severity: 'critical',
       title: result.Description || 'Potential Secret Leak',
       file: result.File,
       line: result.StartLine,

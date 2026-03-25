@@ -23,7 +23,6 @@ async function run(): Promise<void> {
     const resolvedPath = path.resolve(process.env.GITHUB_WORKSPACE || process.cwd(), targetPath);
     const config = loadConfig(resolvedPath);
 
-    // Cache Logic
     const cacheKey = `securox-bins-${TOOLS_VERSION.opengrep}-${TOOLS_VERSION.trivy}-${TOOLS_VERSION.gitleaks}-${process.platform}-${process.arch}`;
     const cachePaths = [BIN_DIR];
 
@@ -75,7 +74,6 @@ async function run(): Promise<void> {
 
     core.info('✅ Scanning completed!');
 
-    // Reporting
     switch (format) {
       case 'json':
         reportToJson(allFindings);
@@ -88,7 +86,6 @@ async function run(): Promise<void> {
         reportToTerminal(allFindings);
     }
 
-    // Exit Code Logic
     const threshold = (failOn || config['severity-threshold']).toLowerCase();
     if (threshold !== 'none') {
       const severityOrder: Record<string, number> = { low: 1, medium: 2, high: 3, critical: 4 };

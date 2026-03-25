@@ -1,5 +1,5 @@
 export interface Finding {
-  id: string;                                    // CVE-ID hoặc rule ID
+  id: string;
   tool: 'sast' | 'sca' | 'secrets';
   severity: 'critical' | 'high' | 'medium' | 'low';
   title: string;
