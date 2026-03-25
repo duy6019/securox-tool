@@ -35991,7 +35991,7 @@ var require_has_flag = __commonJS((exports, module) => {
 
 // node_modules/@colors/colors/lib/system/supports-colors.js
 var require_supports_colors = __commonJS((exports, module) => {
-  var os13 = __require("os");
+  var os14 = __require("os");
   var hasFlag2 = require_has_flag();
   var env2 = process.env;
   var forceColor = undefined;
@@ -36029,7 +36029,7 @@ var require_supports_colors = __commonJS((exports, module) => {
     }
     var min = forceColor ? 1 : 0;
     if (process.platform === "win32") {
-      var osRelease = os13.release().split(".");
+      var osRelease = os14.release().split(".");
       if (Number(process.versions.node.split(".")[0]) >= 8 && Number(osRelease[0]) >= 10 && Number(osRelease[2]) >= 10586) {
         return Number(osRelease[2]) >= 14931 ? 3 : 2;
       }
@@ -68648,8 +68648,8 @@ function saveCacheV2(paths_1, key_1, options_1) {
 }
 
 // src/action.ts
-import * as path22 from "path";
-import * as fs15 from "fs";
+import * as path23 from "path";
+import * as fs16 from "fs";
 
 // src/core/user-loader.ts
 import * as fs7 from "fs";
@@ -71305,7 +71305,7 @@ var safeDump = renamed("safeDump", "dump");
 import * as path11 from "path";
 function loadConfig(dir) {
   const defaults = {
-    scanners: { sast: true, sca: true, secrets: true },
+    scanners: { sast: true, sca: true, secrets: true, performance: false },
     exclude: ["node_modules/", "dist/", "**/*.test.ts"],
     "severity-threshold": "high"
   };
@@ -71353,7 +71353,8 @@ function getBinaryPath(tool) {
 var TOOLS_VERSION = {
   opengrep: "v1.16.5",
   trivy: "v0.69.3",
-  gitleaks: "v8.30.1"
+  gitleaks: "v8.30.1",
+  bearer: "v2.0.1"
 };
 
 // src/core/downloader.ts
@@ -71385,6 +71386,12 @@ function getGitleaksUrl() {
   const archStr = os8.arch() === "x64" ? "x64" : "arm64";
   const ext = os8.platform() === "win32" ? "zip" : "tar.gz";
   return `https://github.com/gitleaks/gitleaks/releases/download/v${version3}/gitleaks_${version3}_${osName}_${archStr}.${ext}`;
+}
+function getBearerUrl() {
+  const version3 = TOOLS_VERSION.bearer.replace(/^v/, "");
+  const osName = os8.platform() === "darwin" ? "darwin" : "linux";
+  const archStr = os8.arch() === "arm64" ? "arm64" : "amd64";
+  return `https://github.com/Bearer/bearer/releases/download/v${version3}/bearer_${version3}_${osName}_${archStr}.tar.gz`;
 }
 async function downloadFile(url2, dest) {
   console.log(`Downloading ${url2}...`);
@@ -71438,7 +71445,8 @@ async function downloadAll() {
   await Promise.all([
     setupBinary("opengrep", getOpengrepUrl()),
     setupBinary("trivy", getTrivyUrl()),
-    setupBinary("gitleaks", getGitleaksUrl())
+    setupBinary("gitleaks", getGitleaksUrl()),
+    setupBinary("bearer", getBearerUrl())
   ]);
 }
 
@@ -78321,6 +78329,68 @@ function mapGitleaksToFindings(data) {
   return findings;
 }
 
+// src/scanners/performance.ts
+import * as path22 from "path";
+import * as fs13 from "fs";
+import * as os12 from "os";
+async function runPerformance(targetDir) {
+  const binaryPath = getBinaryPath("bearer");
+  const tempOutputFile = path22.join(os12.tmpdir(), `bearer-${Date.now()}.json`);
+  try {
+    await execa(binaryPath, [
+      "scan",
+      targetDir,
+      "--format",
+      "json",
+      "--output",
+      tempOutputFile,
+      "--quiet",
+      "--scanner",
+      "sast"
+    ]);
+  } catch (error2) {
+    if (!fs13.existsSync(tempOutputFile)) {
+      throw new Error(`Bearer failed: ${error2.message}`);
+    }
+  }
+  if (!fs13.existsSync(tempOutputFile)) {
+    return [];
+  }
+  const output = fs13.readFileSync(tempOutputFile, "utf-8");
+  fs13.unlinkSync(tempOutputFile);
+  try {
+    const data = JSON.parse(output);
+    return mapBearerToFindings(data);
+  } catch (e) {
+    console.error("Failed to parse Bearer output:", e);
+    return [];
+  }
+}
+function mapBearerToFindings(data) {
+  const findings = [];
+  const severityMap = {
+    critical: "critical",
+    high: "high",
+    medium: "medium",
+    low: "low",
+    warning: "low"
+  };
+  for (const [level, severity] of Object.entries(severityMap)) {
+    for (const item of data[level] || []) {
+      findings.push({
+        id: item.rule_id || item.id || "PERF",
+        tool: "performance",
+        severity,
+        title: item.title || item.description || "Performance issue",
+        file: item.filename || item.file || "unknown",
+        line: item.line_number ?? item.start_line,
+        remediation: item.documentation_url ? `See: ${item.documentation_url}` : "Review the flagged code for performance anti-patterns."
+      });
+    }
+  }
+  return findings;
+}
+
 // node_modules/chalk/source/vendor/ansi-styles/index.js
 var ANSI_BACKGROUND_OFFSET = 10;
 var wrapAnsi16 = (offset = 0) => (code) => `\x1B[${code + offset}m`;
@@ -78500,7 +78570,7 @@ var ansi_styles_default = ansiStyles;
 
 // node_modules/chalk/source/vendor/supports-color/index.js
 import process12 from "node:process";
-import os12 from "node:os";
+import os13 from "node:os";
 import tty3 from "node:tty";
 function hasFlag(flag, argv = globalThis.Deno ? globalThis.Deno.args : process12.argv) {
   const prefix2 = flag.startsWith("-") ? "" : flag.length === 1 ? "-" : "--";
@@ -78565,7 +78635,7 @@ function _supportsColor(haveStream, { streamIsTTY, sniffFlags = true } = {}) {
     return min;
   }
   if (process12.platform === "win32") {
-    const osRelease = os12.release().split(".");
+    const osRelease = os13.release().split(".");
     if (Number(osRelease[0]) >= 10 && Number(osRelease[2]) >= 10586) {
       return Number(osRelease[2]) >= 14931 ? 3 : 2;
     }
@@ -78848,11 +78918,11 @@ function reportToTerminal(findings) {
 }
 
 // src/reporters/json.ts
-import * as fs13 from "fs";
+import * as fs14 from "fs";
 function reportToJson(findings, outputPath) {
   const jsonStr = JSON.stringify(findings, null, 2);
   if (outputPath) {
-    fs13.writeFileSync(outputPath, jsonStr);
+    fs14.writeFileSync(outputPath, jsonStr);
     console.log(`Results saved to ${outputPath}`);
   } else {
     console.log(jsonStr);
@@ -78860,7 +78930,7 @@ function reportToJson(findings, outputPath) {
 }
 
 // src/reporters/sarif.ts
-import * as fs14 from "fs";
+import * as fs15 from "fs";
 function reportToSarif(findings, outputPath) {
   const sarif = {
     version: "2.1.0",
@@ -78897,7 +78967,7 @@ function reportToSarif(findings, outputPath) {
   };
   const jsonStr = JSON.stringify(sarif, null, 2);
   if (outputPath) {
-    fs14.writeFileSync(outputPath, jsonStr);
+    fs15.writeFileSync(outputPath, jsonStr);
     console.log(`SARIF report saved to ${outputPath}`);
   } else {
     console.log(jsonStr);
@@ -78910,7 +78980,7 @@ async function run() {
     const targetPath = getInput("targetPath") || ".";
     const failOn = getInput("fail-on") || "high";
     const format2 = getInput("format") || "terminal";
-    const resolvedPath = path22.resolve(process.env.GITHUB_WORKSPACE || process.cwd(), targetPath);
+    const resolvedPath = path23.resolve(process.env.GITHUB_WORKSPACE || process.cwd(), targetPath);
     const config = loadConfig(resolvedPath);
     const cacheKey = `securox-bins-${TOOLS_VERSION.opengrep}-${TOOLS_VERSION.trivy}-${TOOLS_VERSION.gitleaks}-${process.platform}-${process.arch}`;
     const cachePaths = [BIN_DIR];
@@ -78924,7 +78994,7 @@ async function run() {
     } catch (e) {
       info(`⚠️ Cache restore failed or unavailable: ${e.message}`);
     }
-    if (!cacheHit || !fs15.existsSync(BIN_DIR) || fs15.readdirSync(BIN_DIR).length === 0) {
+    if (!cacheHit || !fs16.existsSync(BIN_DIR) || fs16.readdirSync(BIN_DIR).length === 0) {
       info("⏬ Binaries not found in cache. Downloading fresh copies...");
       await downloadAll();
       try {
@@ -78951,6 +79021,12 @@ async function run() {
       startGroup("Secrets Scan (Gitleaks)");
       const secrets = await runSecrets(resolvedPath);
       allFindings.push(...secrets);
+      endGroup();
+    }
+    if (config.scanners.performance) {
+      startGroup("Performance Scan (Bearer)");
+      const perf = await runPerformance(resolvedPath);
+      allFindings.push(...perf);
       endGroup();
     }
     info("✅ Scanning completed!");

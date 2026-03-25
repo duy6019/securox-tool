@@ -11,11 +11,11 @@ export function ensureBinDir() {
   }
 }
 
-export function getBinaryName(tool: 'opengrep' | 'trivy' | 'gitleaks'): string {
+export function getBinaryName(tool: 'opengrep' | 'trivy' | 'gitleaks' | 'bearer'): string {
   const isWindows = os.platform() === 'win32';
   return isWindows ? `${tool}.exe` : tool;
 }
 
-export function getBinaryPath(tool: 'opengrep' | 'trivy' | 'gitleaks'): string {
+export function getBinaryPath(tool: 'opengrep' | 'trivy' | 'gitleaks' | 'bearer'): string {
   return path.join(BIN_DIR, getBinaryName(tool));
 }

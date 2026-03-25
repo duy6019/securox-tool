@@ -5,12 +5,6 @@ import { ensureBinDir, getBinaryName, getBinaryPath, BIN_DIR } from './environme
 import { TOOLS_VERSION } from './constants';
 import decompress from 'decompress';
 
-const OS_MAP: Record<string, string> = {
-  darwin: 'macos',
-  linux: 'linux',
-  win32: 'windows',
-};
-
 function getOpengrepUrl(): string {
   const version = TOOLS_VERSION.opengrep;
   const platform = os.platform();
@@ -46,6 +40,14 @@ function getGitleaksUrl(): string {
   return `https://github.com/gitleaks/gitleaks/releases/download/v${version}/gitleaks_${version}_${osName}_${archStr}.${ext}`;
 }
 
+function getBearerUrl(): string {
+  const version = TOOLS_VERSION.bearer.replace(/^v/, '');
+  // Bearer uses 'darwin' for macOS and 'linux' for Linux; no official Windows binary
+  const osName = os.platform() === 'darwin' ? 'darwin' : 'linux';
+  const archStr = os.arch() === 'arm64' ? 'arm64' : 'amd64';
+  return `https://github.com/Bearer/bearer/releases/download/v${version}/bearer_${version}_${osName}_${archStr}.tar.gz`;
+}
+
 async function downloadFile(url: string, dest: string): Promise<void> {
   console.log(`Downloading ${url}...`);
   const response = await fetch(url);
@@ -67,7 +69,7 @@ async function downloadFile(url: string, dest: string): Promise<void> {
   });
 }
 
-async function setupBinary(tool: 'opengrep' | 'trivy' | 'gitleaks', url: string): Promise<void> {
+async function setupBinary(tool: 'opengrep' | 'trivy' | 'gitleaks' | 'bearer', url: string): Promise<void> {
   const finalPath = getBinaryPath(tool);
   if (fs.existsSync(finalPath)) return;
 
@@ -97,5 +99,6 @@ export async function downloadAll(): Promise<void> {
     setupBinary('opengrep', getOpengrepUrl()),
     setupBinary('trivy', getTrivyUrl()),
     setupBinary('gitleaks', getGitleaksUrl()),
+    setupBinary('bearer', getBearerUrl()),
   ]);
 }

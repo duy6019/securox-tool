@@ -6,6 +6,7 @@ import { loadConfig } from '../core/user-loader';
 import { runSAST } from '../scanners/sast';
 import { runSCA } from '../scanners/sca';
 import { runSecrets } from '../scanners/secrets';
+import { runPerformance } from '../scanners/performance';
 import { reportToTerminal } from '../reporters/terminal';
 import { reportToJson } from '../reporters/json';
 import { reportToSarif } from '../reporters/sarif';
@@ -45,6 +46,12 @@ export const scanCommand = new Command('scan')
         spinner.text = 'Running Secrets scan (Gitleaks)...';
         const secrets = await runSecrets(resolvedPath);
         allFindings.push(...secrets);
+      }
+
+      if (config.scanners.performance) {
+        spinner.text = 'Running Performance scan (Bearer)...';
+        const perf = await runPerformance(resolvedPath);
+        allFindings.push(...perf);
       }
 
       spinner.succeed('Scanning completed!');

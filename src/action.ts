@@ -9,6 +9,7 @@ import { TOOLS_VERSION } from './core/constants';
 import { runSAST } from './scanners/sast';
 import { runSCA } from './scanners/sca';
 import { runSecrets } from './scanners/secrets';
+import { runPerformance } from './scanners/performance';
 import { reportToTerminal } from './reporters/terminal';
 import { reportToJson } from './reporters/json';
 import { reportToSarif } from './reporters/sarif';
@@ -69,6 +70,13 @@ async function run(): Promise<void> {
       core.startGroup('Secrets Scan (Gitleaks)');
       const secrets = await runSecrets(resolvedPath);
       allFindings.push(...secrets);
+      core.endGroup();
+    }
+
+    if (config.scanners.performance) {
+      core.startGroup('Performance Scan (Bearer)');
+      const perf = await runPerformance(resolvedPath);
+      allFindings.push(...perf);
       core.endGroup();
     }
 

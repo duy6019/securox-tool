@@ -3,6 +3,7 @@ scanners:
   sast: true
   sca: true
   secrets: true
+  performance: true 
 
 severity-threshold: high
 
